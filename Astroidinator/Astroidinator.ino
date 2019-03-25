@@ -14,13 +14,17 @@
 //globals
 LiquidCrystal_I2C GameLcd(0x3F, 20, 4); //Refer to the screen //Alternative 0x27
 bool enableDebugLog = true;
+bool up = false;
+bool down = false;
+bool left = false;
+bool right = false;
 bool pressed = false;
 int gameState = 0; //0: Difficulty Select, 1: Name Select, 2: Ingame, 3: GameOver
 int difficulty = 0; //0: unset, 1: little boy, 2: fat man, 3: tsar bomba
-int playerPos = 1; //Possible positions: 0, 1, 2, 3
+int playerPos = 0; //Possible positions: 0, 1, 2, 3
 int chooseNameIndex = 0; //0: 1st letter - 3: 4th letter
-String characters[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"," "};
-String playerName[4];
+String characters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", " "};
+String playerName[4] = {"A", "A", "A", "A"};
 
 //Init Functions
 void InitSerial()
@@ -121,22 +125,36 @@ void HandleJoystick()
   int xValue = analogRead(readX);
   int yValue = analogRead(readY);
   int sValue = digitalRead(readS);
+
+  //Set all inputs to false
+  up = false;
+  down = false;
+  left = false;
+  right = false;
+  pressed = false;
+
+  //Check input
+  if (xValue > 1000)
+  {
+    right = true;
+  }
+  else if (xValue < 200)
+  {
+    left = true;
+  }
+  
   if (yValue > 1000)
   {
-    playerPos--;
+    up = true;
   }
   else if (yValue < 200)
   {
-    playerPos++;
+    down = true;
   }
 
   if (sValue == 0)
   {
     pressed = true;
-  }
-  else
-  {
-    pressed = false;
   }
 }
 
@@ -144,24 +162,38 @@ void setDifficulty()
 {
   //print lcd
   WriteToLcd(0, 0, "Select Difficulty", true);
-  //TODO: Add Player Position
+
+  //set playerPos
+  if (up)
+  {
+    playerPos--;
+    if (playerPos == -1)
+    {
+      playerPos = 2;
+    }
+  }
+  else if (down)
+  {
+    playerPos++;
+    if (playerPos == 3)
+    {
+      playerPos = 0;
+    }
+  }
+  
   switch (playerPos)
   {
     case (0):
-      playerPos = 3;
-    case (4):
-      playerPos = 1;
-    case (1):
       WriteToLcd(0, 1, "> Little Boy");
       WriteToLcd(0, 2, "  Fat Man");
       WriteToLcd(0, 3, "  Tsar Bomba");
       break;
-    case (2):
+    case (1):
       WriteToLcd(0, 1, "  Little Boy");
       WriteToLcd(0, 2, "> Fat Man");
       WriteToLcd(0, 3, "  Tsar Bomba");
       break;
-    case (3):
+    case (2):
       WriteToLcd(0, 1, "  Little Boy");
       WriteToLcd(0, 2, "  Fat Man");
       WriteToLcd(0, 3, "> Tsar Bomba");
@@ -170,9 +202,11 @@ void setDifficulty()
 
   if (pressed)
   {
-    WriteToLcd(0,0, "Select Difficulty", true);
-    
-    switch (playerPos)
+    difficulty = playerPos + 1; //Set difficulty to selected index
+
+    WriteToLcd(0, 0, "Select Difficulty", true);
+
+    switch (difficulty)
     {
       case (1):
         WriteToLcd(0, 1, "  Little Boy");
@@ -185,13 +219,74 @@ void setDifficulty()
         break;
     }
     gameState++; //Go to name select
+    playerPos = 0;
     delay(2000);
   }
 }
 
 void SelectName()
 {
+  int maxPos = 26;
+    
+  WriteToLcd(0, 0, "Select Name", true);
+
+  //set playerPos and chooseNameIndex
+  if (pressed or right)
+  {
+    chooseNameIndex++;
+  }
+  else if (left and chooseNameIndex != 0)
+  {
+    chooseNameIndex--;
+  }
+
+  for (int i = 0; i < maxPos; i++) //Set player pos to the currently selected letter
+  {
+    if (playerName[chooseNameIndex] == characters[i])
+    {
+      playerPos = i;
+      break;
+    }
+  }
   
+  if (up)
+  {
+    playerPos--;
+  }
+  else if (down)
+  {
+    playerPos++;
+  }
+
+  //Check if playerPos is outside the bounds of characters[]
+  if (playerPos > maxPos)
+  {
+    playerPos = 0;
+  }
+  else if (playerPos == -1)
+  {
+    playerPos = maxPos;
+  }
+
+  playerName[chooseNameIndex] = characters[playerPos]; //Set the selected character
+
+  //Write Name
+  WriteToLcd(2, 2, playerName[0]);
+  WriteToLcd(3, 2, playerName[1]);
+  WriteToLcd(4, 2, playerName[2]);
+  WriteToLcd(5, 2, playerName[3]);
+  //Current position
+
+  if (chooseNameIndex < 4)
+  {
+    WriteToLcd(2 + chooseNameIndex, 3, "^");
+  }
+  else
+  {
+    gameState++; //Go to game
+    playerPos = 0;
+    delay(2000);
+  }
 }
 
 //Loop
@@ -200,12 +295,13 @@ void loop() {
   {
     case (0):
       setDifficulty();
-      delay(1000);
       break;
     case (1):
       SelectName();
+      break;
   }
-  
+
+  delay(1000);
   HandleJoystick();
 }
 
