@@ -2,7 +2,9 @@
 //Version
 //v0, 11feb2019: initial version
 
+//Libraries
 #include <LiquidCrystal_I2C.h>
+#include <SimpleTimer.h>
 
 //Constants
 #define readX A0
@@ -16,6 +18,9 @@ bool pressed = false;
 int gameState = 0; //0: Difficulty Select, 1: Name Select, 2: Ingame, 3: GameOver
 int difficulty = 0; //0: unset, 1: little boy, 2: fat man, 3: tsar bomba
 int playerPos = 1; //Possible positions: 0, 1, 2, 3
+int chooseNameIndex = 0; //0: 1st letter - 3: 4th letter
+String characters[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"," "};
+String playerName[4];
 
 //Init Functions
 void InitSerial()
@@ -201,7 +206,6 @@ void loop() {
       SelectName();
   }
   
-
   HandleJoystick();
 }
 
