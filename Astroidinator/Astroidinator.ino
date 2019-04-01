@@ -1,3 +1,5 @@
+
+
 //Created: Jeremey van Uden, Peter Janssen, 25Maart2019, v0
 //Version
 //v0, 11feb2019: initial version
@@ -5,7 +7,8 @@
 //Libraries
 #include <LiquidCrystal_I2C.h>
 #include <SimpleTimer.h>
-
+//objects
+SimpleTimer timer;
 //Constants
 #define readX A0
 #define readY A1
@@ -42,6 +45,7 @@ void InitGlobals()
 {
   Serial.println("INIT: globals");
   enableDebugLog = true;
+  timer.setInterval(1000, checkGameState);
   Serial.println("READY: globals initialized");
 }
 
@@ -202,7 +206,13 @@ void setDifficulty()
 
   if (pressed)
   {
-    difficulty = playerPos + 1; //Set difficulty to selected index
+    checkIfPressed();
+  }
+}
+
+void checkIfPressed()
+{
+  difficulty = playerPos + 1; //Set difficulty to selected index
 
     WriteToLcd(0, 0, "Select Difficulty", true);
 
@@ -220,10 +230,7 @@ void setDifficulty()
     }
     gameState++; //Go to name select
     playerPos = 0;
-    delay(2000);
-  }
 }
-
 void SelectName()
 {
   int maxPos = 26;
@@ -285,12 +292,10 @@ void SelectName()
   {
     gameState++; //Go to game
     playerPos = 0;
-    delay(2000);
   }
 }
-
-//Loop
-void loop() {
+void checkGameState()
+{
   switch (gameState)
   {
     case (0):
@@ -300,8 +305,10 @@ void loop() {
       SelectName();
       break;
   }
-
-  delay(1000);
   HandleJoystick();
+}
+//Loop
+void loop() {
+  timer.run();
 }
 
