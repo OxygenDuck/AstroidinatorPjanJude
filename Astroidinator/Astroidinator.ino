@@ -254,6 +254,7 @@ void checkIfPressed()
       break;
   }
   gameState++; //Go to name select
+  PrintLn("Difficulty has been set");
   playerPos = 0;
 }
 void SelectName()
@@ -316,6 +317,7 @@ void SelectName()
   else
   {
     gameState++; //Go to game
+    PrintLn("Player Name has been set");
     playerPos = 0;
     GameLcd.clear();
   }
@@ -349,6 +351,7 @@ void BombMovement()
       bombs[bombCounter].beenShot = true;
       bombs[bombCounter].currentpositionX = playerPos;
       bombCounter++;
+      PrintLn("Bomb Created");
     }
 
     for (int i = 0; i < bombCounter; i++) {
@@ -408,19 +411,22 @@ void checkCollision()
             bombs[x].beenShot = false;
             asteroids[i].destroyed = true;
             WriteToLcd(asteroids[i].x, asteroids[i].y, "#");
+            PrintLn("Asteroid destroyed");
           }
           else if (bombs[x].currentpositionY == asteroids[i].x - 1 && bombs[x].currentpositionX == asteroids[i].y)
           {
             bombs[x].beenShot = false;
             asteroids[i].destroyed = true;
             WriteToLcd(asteroids[i].x, asteroids[i].y, "#");
-            WriteToLcd(asteroids[i].x - 1, asteroids[i].y, " ");
+            WriteToLcd(bombs[x].currentpositionY, bombs[x].currentpositionX, " ");
+            PrintLn("Asteroid destroyed");
           }
         }
       }
       if (asteroids[i].x == 0 && asteroids[i].y == playerPos)
       {
         gameState++;
+        PrintLn("Player destroyed");
         WriteToLcd(asteroids[i].x, asteroids[i].y, "#");
       }
     }
@@ -456,7 +462,7 @@ void AsteroidMovement()
   {
     if (asteroids[i].exist == false)
     {
-      Serial.println("create new asteroid");
+      PrintLn("create new asteroid");
       asteroids[i].x = 20;
       asteroids[i].y = random(0, 4);
       asteroids[i].destroyed = false;
