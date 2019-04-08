@@ -32,6 +32,7 @@ typedef struct
 
 //globals
 LiquidCrystal_I2C GameLcd(0x3F, 20, 4); //Refer to the screen //Alternative 0x27
+LiquidCrystal_I2C SecondLcd(0x3B, 20, 4); //Refer to the sub screen
 bool enableDebugLog = true;
 bool up = false;
 bool down = false;
@@ -74,6 +75,9 @@ void InitGameLcd()
   GameLcd.init();
   GameLcd.setBacklight(1);
   GameLcd.clear();
+  SecondLcd.init();
+  SecondLcd.setBacklight(1);
+  SecondLcd.clear();
   StartUp1();
   StartUp2();
 }
@@ -106,6 +110,30 @@ void WriteToLcd(int a_x, int a_y, String a_text, bool a_clear) //Overload with c
     GameLcd.clear();
   }
   WriteToLcd(a_x, a_y, a_text);
+}
+
+void WriteToSecond(int a_x, int a_y, String a_text)
+{
+  int m_length;
+  String m_singleLetter;
+
+  SecondLcd.setCursor(a_x, a_y);
+
+  m_length = a_text.length();
+
+  for (int m_index = 0; m_index < m_length; m_index++)
+  {
+    SecondLcd.print(a_text[m_index]) ;
+  }
+}
+
+void WriteToSecond(int a_x, int a_y, String a_text, bool a_clear) //Overload with clear
+{
+  if (a_clear)
+  {
+    SecondLcd.clear();
+  }
+  WriteToSecond(a_x, a_y, a_text);
 }
 
 //Serial PrintLine Method
@@ -325,21 +353,7 @@ void SelectName()
 void ShipMovement()
 {
   playerPosition(4);
-  switch (playerPos)
-  {
-    case (0):
-      WriteToLcd(0, 0, ">");
-      break;
-    case (1):
-      WriteToLcd(0, 1, ">");
-      break;
-    case (2):
-      WriteToLcd(0, 2, ">");
-      break;
-    case (3):
-      WriteToLcd(0, 3, ">");
-      break;
-  }
+  WriteToLcd(0, playerPos, ">");
 }
 
 void BombMovement()
@@ -355,13 +369,7 @@ void BombMovement()
     }
 
     for (int i = 0; i < bombCounter; i++) {
-      if (bombs[i].currentpositionY > 18)
-      {
-        bombs[i].currentpositionY = 1;
-        bombs[i].currentpositionX = 1;
-        bombs[i].beenShot = false;
-      }
-      else if (bombs[i].beenShot == true)
+      if (bombs[i].beenShot == true)
       {
         bombs[i].currentpositionY = bombs[i].currentpositionY + 1;
         WriteToLcd(bombs[i].currentpositionY, bombs[i].currentpositionX, "=");
@@ -369,6 +377,34 @@ void BombMovement()
     }
   }
 }
+
+void WriteInfoScreen()
+{
+  //Write name
+  WriteToSecond(0,0,playerName[0]);
+  WriteToSecond(1,0,playerName[1]);
+  WriteToSecond(2,0,playerName[2]);
+  WriteToSecond(3,0,playerName[3]);
+  //Write Difficulty
+  switch (difficulty)
+  {
+    case 1: WriteToSecond(5,0,"Little Boy"); break;
+    case 2: WriteToSecond(5,0,"Fat Man"); break;
+    case 3: WriteToSecond(5,0,"Tsar Bomba"); break;
+  }
+  //Write Bullets
+  int bombsLeft = 0;
+  for (int i = 0; i < 20; i++)
+  {
+    if (bombs[i].beenShot == false)
+    {
+      bombsLeft++;
+    }
+  }
+  
+  WriteToSecond(0,1,"Bombs left: " + String(bombsLeft));
+}
+
 void checkGameState()
 {
   switch (gameState)
@@ -385,6 +421,7 @@ void checkGameState()
       AsteroidMovement();
       BombMovement();
       checkCollision();
+      WriteInfoScreen();
       break;
     case (3):
       GameLcd.clear();
@@ -408,14 +445,12 @@ void checkCollision()
         {
           if (bombs[x].currentpositionY == asteroids[i].x && bombs[x].currentpositionX == asteroids[i].y)
           {
-            bombs[x].beenShot = false;
             asteroids[i].destroyed = true;
             WriteToLcd(asteroids[i].x, asteroids[i].y, "#");
             PrintLn("Asteroid destroyed");
           }
           else if (bombs[x].currentpositionY == asteroids[i].x - 1 && bombs[x].currentpositionX == asteroids[i].y)
           {
-            bombs[x].beenShot = false;
             asteroids[i].destroyed = true;
             WriteToLcd(asteroids[i].x, asteroids[i].y, "#");
             WriteToLcd(bombs[x].currentpositionY, bombs[x].currentpositionX, " ");
