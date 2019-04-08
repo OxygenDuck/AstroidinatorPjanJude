@@ -23,7 +23,8 @@ SimpleTimer timer;
 #define readS 2
 
 //globals
-LiquidCrystal_I2C GameLcd(0x3F, 20, 4); //Refer to the screen //Alternative 0x27
+LiquidCrystal_I2C GameLcd(0x3F, 20, 4); //Refer to the main screen //Alternative 0x27
+LiquidCrystal_I2C SecondLcd(0x3B, 20, 4); //Refer to the sub screen
 bool enableDebugLog = true;
 bool up = false;
 bool down = false;
@@ -64,6 +65,9 @@ void InitGameLcd()
   GameLcd.init();
   GameLcd.setBacklight(1);
   GameLcd.clear();
+  SecondLcd.init();
+  SecondLcd.setBacklight(1);
+  SecondLcd.clear();
   StartUp1();
   StartUp2();
 }
@@ -98,6 +102,30 @@ void WriteToLcd(int a_x, int a_y, String a_text, bool a_clear) //Overload with c
   WriteToLcd(a_x, a_y, a_text);
 }
 
+void WriteToSecond(int a_x, int a_y, String a_text)
+{
+  int m_length;
+  String m_singleLetter;
+
+  SecondLcd.setCursor(a_x, a_y);
+
+  m_length = a_text.length();
+
+  for (int m_index = 0; m_index < m_length; m_index++)
+  {
+    SecondLcd.print(a_text[m_index]) ;
+  }
+}
+
+void WriteToSecond(int a_x, int a_y, String a_text, bool a_clear) //Overload with clear
+{
+  if (a_clear)
+  {
+    SecondLcd.clear();
+  }
+  WriteToSecond(a_x, a_y, a_text);
+}
+
 //Serial PrintLine Method
 void PrintLn(String a_inputString)
 {
@@ -113,6 +141,7 @@ void StartUp1()
   WriteToLcd(0, 0, "Jeremey vU, Peter J");
   WriteToLcd(0, 1, "Version 0");
   WriteToLcd(0, 2, "March 25 2019");
+  WriteToSecond(0, 0, "I AM SECOND", true);
   delay(2000);
 }
 
@@ -121,6 +150,8 @@ void StartUp2()
   WriteToLcd(0, 0, "NUKEinator", true);
   WriteToLcd(0, 1, "I am Become Death");
   WriteToLcd(0, 2, "Destroyer of Worlds");
+  WriteToSecond(0, 0, "I NEED", true);
+  WriteToSecond(0, 1, "INFORMATION");
   delay(2000);
 }
 
