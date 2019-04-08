@@ -330,24 +330,27 @@ void ShipMovement()
 
 void BombMovement()
 {
+  if  (bombCounter < 21)
+{
   if (pressed)
-  {
-    bombs[bombCounter].beenShot = true;
-    bombs[bombCounter].currentpositionX = playerPos;
-    bombCounter++;
-  }
-
-  for (int i = 0; i < bombCounter; i++) {
-    if (bombs[i].currentpositionY > 18)
     {
-      bombs[i].currentpositionY = 1;
-      bombs[i].currentpositionX = 1;
-      bombs[i].beenShot = false;
+      bombs[bombCounter].beenShot = true;
+      bombs[bombCounter].currentpositionX = playerPos;
+      bombCounter++;
     }
-    else if (bombs[i].beenShot == true)
-    {
-      bombs[i].currentpositionY = bombs[i].currentpositionY + 1;
-      WriteToLcd(bombs[i].currentpositionY, bombs[i].currentpositionX, "=");
+
+    for (int i = 0; i < bombCounter; i++) {
+      if (bombs[i].currentpositionY > 18)
+      {
+        bombs[i].currentpositionY = 1;
+        bombs[i].currentpositionX = 1;
+        bombs[i].beenShot = false;
+      }
+      else if (bombs[i].beenShot == true)
+      {
+        bombs[i].currentpositionY = bombs[i].currentpositionY + 1;
+        WriteToLcd(bombs[i].currentpositionY, bombs[i].currentpositionX, "=");
+      }
     }
   }
 }
