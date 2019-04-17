@@ -1,5 +1,3 @@
-
-
 //Created: Jeremey van Uden, Peter Janssen, 25Maart2019, v0
 //Version
 //v0, 11feb2019: initial version
@@ -11,9 +9,9 @@
 //objects
 SimpleTimer timerJude;
 //Constants
-#define readX A0
-#define readY A1
-#define readS 2
+#define AIX A0
+#define AIY A1
+#define DIS 2
 
 //structs
 struct bombJude {
@@ -87,7 +85,7 @@ void InitGameLcd()
 
 void InitPins()
 {
-  pinMode(readS, INPUT_PULLUP);
+  pinMode(DIS, INPUT_PULLUP);
 }
 
 //Write to lcd
@@ -182,9 +180,9 @@ void setup() {
 //Handle joystick inputs
 void HandleJoystick()
 {
-  int m_xValue = analogRead(readX);
-  int m_yValue = analogRead(readY);
-  int m_sValue = digitalRead(readS);
+  int m_xValue = analogRead(AIX);
+  int m_yValue = analogRead(AIY);
+  int m_sValue = digitalRead(DIS);
 
   //Set all inputs to false
   upPjan = false;
@@ -270,7 +268,7 @@ void CheckGameState()
     case (4):
       ResetGame();
       gameStatePjan = 0;
-      midiGameOverPjan();
+      MidiGameOverPjan();
       break;
   }
   HandleJoystick();

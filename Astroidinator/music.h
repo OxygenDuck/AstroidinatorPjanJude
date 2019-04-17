@@ -10,7 +10,7 @@ void BoomSoundPjan()
   tone(tonePinPjan, 466, 150.0);
 }
 
-void midiGameOverPjan()
+void MidiGameOverPjan()
 {
     tone(tonePinPjan, 466, 150.0);
     delay(166.666666667);
